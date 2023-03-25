@@ -8,14 +8,14 @@ ENV GOARCH=amd64
 ENV CGO_ENABLED=0
 
 RUN go mod download
-RUN go build -o ./bin/master-proxy ./main.go
+RUN go build -o ./bin/kubeception-proxy ./main.go
 
-RUN chmod +x ./bin/master-proxy
+RUN chmod +x ./bin/kubeception-proxy
 
 FROM scratch
 WORKDIR /
 
-COPY --from=build /bin/master-proxy ./
+COPY --from=build /bin/kubeception-proxy ./
 
 EXPOSE 443
-ENTRYPOINT [ "/master-proxy" ]
+ENTRYPOINT [ "/kubeception-proxy" ]

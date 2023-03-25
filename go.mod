@@ -1,3 +1,3 @@
-module scaleship.io/kubernetes/master-proxy
+module scaleship.io/kubernetes/kubeception-proxy
 
 go 1.20
