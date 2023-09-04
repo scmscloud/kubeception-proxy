@@ -20,6 +20,7 @@ func main() {
 	log.SetFlags(0)
 	flag.Parse()
 
+	log.Printf("Proxy is now listening on %q...", *addr)
 	lis, err := net.Listen("tcp", *addr)
 	if err != nil {
 		log.Fatalf("Cannot listen: %s", err.Error())
