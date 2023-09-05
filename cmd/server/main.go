@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	addr      = flag.String("bind-address", "0.0.0.0:8000", "The IP:PORT address on which to listen.")
+	addr      = flag.String("bind-address", "0.0.0.0:1080", "The IP:PORT address on which to listen.")
 	hostname  = flag.String("hostname", "localhost", "Advertised hostname of kubernetes API (must be a DNS `A` record)")
 	port      = flag.Int("port", 443, "Advertised port of kubernetes API.")
 	refresh   = flag.String("internal-refresh", "5m", "")
