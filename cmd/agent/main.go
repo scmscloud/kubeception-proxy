@@ -8,17 +8,25 @@ import (
 	"time"
 
 	"golang.org/x/net/proxy"
+	"scaleship.io/kubernetes/kubeception-proxy/pkg/encryption"
 )
 
 var (
-	addr   = flag.String("bind-address", "127.0.0.1:8080", "The IP:PORT address on which to listen.")
-	remote = flag.String("proxy-address", "127.0.0.1:8000", "Address (IP:PORT) of the kubeception remote server.")
+	addr        = flag.String("bind-address", "127.0.0.1:8080", "The IP:PORT address on which to listen.")
+	remote      = flag.String("proxy-address", "127.0.0.1:1080", "Address (IP:PORT) of the kubeception remote server.")
+	endpoint    = flag.String("endpoint", "kubernetes.default.svc.cluster.local:443", "Address (IP:PORT) of the kubeception API server.")
+	privatefile = flag.String("private-file", "", "Path to the private key file for SOCKS5 authentication.")
 )
 
 func main() {
 
 	log.SetFlags(0)
 	flag.Parse()
+
+	private, err := encryption.ParsePrivate(*privatefile)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	log.Printf("Proxy is now listening on %q...", *addr)
 	lis, err := net.Listen("tcp", *addr)
@@ -37,7 +45,21 @@ func main() {
 
 			defer src.Close()
 
-			dailer, err := proxy.SOCKS5("tcp", *remote, nil, &net.Dialer{
+			pwd, err := encryption.Sign(private, *endpoint)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			gzp, err := encryption.Compress(pwd)
+
+			data := *gzp
+			username := data[0 : (len(data)-1)/2]
+			password := data[(len(data) / 2):]
+
+			dailer, err := proxy.SOCKS5("tcp", *remote, &proxy.Auth{
+				User:     username,
+				Password: password,
+			}, &net.Dialer{
 				Timeout:   60 * time.Second,
 				KeepAlive: 30 * time.Second,
 			})
@@ -47,8 +69,7 @@ func main() {
 				return
 			}
 
-			// Advertise tcp address is always defined by remote proxy (`localhost:443` is overwritten).
-			dst, err := dailer.Dial("tcp", "localhost:443")
+			dst, err := dailer.Dial("tcp", *endpoint)
 			if err != nil {
 				log.Printf("[WARNING] Cannot dial: %s", err.Error())
 				log.Println(err)
