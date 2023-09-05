@@ -10,9 +10,7 @@ import (
 	"scaleship.io/kubernetes/kubeception-proxy/pkg/encryption"
 )
 
-type Signature struct {
-	Clients []Client
-}
+type Signature struct{}
 
 func (a Signature) Authenticate(r io.Reader, w io.Writer, usraddr string) (*socks5.AuthContext, error) {
 
