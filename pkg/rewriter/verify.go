@@ -30,7 +30,6 @@ func (c ClusterDynamicRewriter) Rewrite(ctx context.Context, r *socks5.Request) 
 
 	// Verify authentication signature with endpoint
 	signed, err := encryption.Verify(&c.Private.PublicKey, endpoint, r.AuthContext.Payload["signature"])
-	signed = false
 	if !signed || err != nil {
 		log.Printf("[WARNING] Invalid signatures from %q in SOCKS5 authentication process.", r.RemoteAddr)
 		r.DestAddr.Port = 0
